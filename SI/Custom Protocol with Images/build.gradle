@@ -1,0 +1,40 @@
+apply plugin: 'java'
+
+description = "SI Client/Server Program"
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.json:json:20171018'
+}
+
+tasks.withType(JavaCompile) {
+  options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+task runClient(type: JavaExec) {
+  description 'Client program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
+  main = 'Client'
+
+  // gradle runClient -Phost=somehost -Pport=someport
+  if (project.hasProperty("host") && project.hasProperty('port')) {
+    args(project.getProperty('host'), project.getProperty('port'));
+  }
+}
+
+task runServer(type: JavaExec) {
+  description 'Server program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'Server'
+
+  // gradle runClient -Pport=someport
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }
+}
