@@ -14,12 +14,12 @@ tasks.withType(JavaCompile) {
   options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-task runClient(type: JavaExec) {
+task tcpClient(type: JavaExec) {
   description 'Client program for SI server example'
 
   classpath = sourceSets.main.runtimeClasspath
   standardInput = System.in
-  main = 'Client'
+  main = 'tcp.Client'
 
   // gradle runClient -Phost=somehost -Pport=someport
   if (project.hasProperty("host") && project.hasProperty('port')) {
@@ -27,11 +27,36 @@ task runClient(type: JavaExec) {
   }
 }
 
-task runServer(type: JavaExec) {
+task tcpServer(type: JavaExec) {
   description 'Server program for SI server example'
 
   classpath = sourceSets.main.runtimeClasspath
-  main = 'Server'
+  main = 'tcp.Server'
+
+  // gradle runClient -Pport=someport
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }
+}
+
+task udpClient(type: JavaExec) {
+  description 'Client program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
+  main = 'udp.Client'
+
+  // gradle runClient -Phost=somehost -Pport=someport
+  if (project.hasProperty("host") && project.hasProperty('port')) {
+    args(project.getProperty('host'), project.getProperty('port'));
+  }
+}
+
+task udpServer(type: JavaExec) {
+  description 'Server program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'udp.Server'
 
   // gradle runClient -Pport=someport
   if (project.hasProperty('port')) {

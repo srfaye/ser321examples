@@ -1,3 +1,5 @@
+package udp;
+
 import java.net.*;
 import java.io.*;
 import org.json.*;
@@ -16,6 +18,8 @@ public class Server {
   //************************
   // main program code
   public static void main(String[] args) throws Exception {
+    // initialize UDP socket
+    DatagramSocket sock = null;
     // get command line arguments (port)
     try {
       if (args.length != 1) {
@@ -34,27 +38,17 @@ public class Server {
       // populate a JSONArray with fun stuff to work with
       JSONArray memes = getMemes();
 
-      // open the port/create a socket
-      ServerSocket sock = new ServerSocket(port);
-      Socket clientSock;
-      System.out.println("Server is ready for connection...");
+      // set a UDP socket to send/receive packets on a specific port
+      sock = new DatagramSocket(port);
 
+      System.out.println("UDP Server is ready for packets...");
       // begin infinite while loop
       while (true) {
-        // wait for client to connect
         try {
-          clientSock = sock.accept();
-          ObjectOutputStream out = new ObjectOutputStream(clientSock.getOutputStream());
-          ObjectInputStream in = new ObjectInputStream(clientSock.getInputStream());
-          System.out.println("A client has connected!");
-
-          // wait for requests
           while (true) {
-
-            // receive a new request
-            String received = (String) in.readObject();
-            // System.out.println("Received from client: " + received);
-            JSONObject req = new JSONObject(received);
+            // wait to receive a request
+            NetworkUtils.Tuple requestTuple = NetworkUtils.Receive(sock);
+            JSONObject req = new JSONObject(new String(requestTuple.Payload));
             JSONObject res = new JSONObject();
 
             // findMemeByName request
@@ -120,7 +114,7 @@ public class Server {
             }
 
             // send the server's response
-            out.writeObject(res.toString());
+            NetworkUtils.Send(sock, requestTuple.Address, requestTuple.Port, res.toString().getBytes());
           }
 
           // keep listening for more clients
@@ -130,6 +124,10 @@ public class Server {
       }
     } catch (Exception ex) {
       ex.printStackTrace();
+    } finally {
+      if (sock != null) {
+        sock.close();
+      }
     }
   }
 

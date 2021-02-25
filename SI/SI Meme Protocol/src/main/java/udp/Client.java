@@ -1,3 +1,5 @@
+package udp;
+
 import java.net.*;
 import java.io.*;
 import org.json.*;
@@ -59,20 +61,19 @@ public class Client {
       try {
         port = Integer.parseInt(args[1]);
       } catch (NumberFormatException ex) {
-        System.out.println("Error parsing port number: Port should be an int");
+        System.out.println("Error parsing host name or port number...");
         System.exit(0);
       }
-      String host = args[0];
+      InetAddress address = InetAddress.getByName(args[0]); // set up the server IP
 
-      // connect to server (create socket, connect)
-      Socket server = new Socket(host, port);
-      System.out.println("Connected to server at " + host + ":" + port);
-      ObjectInputStream in = new ObjectInputStream(server.getInputStream());
-      ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
+      // create a UDP socket to send our messages
+      DatagramSocket server = new DatagramSocket();
+
       BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
       // begin "infinite" while loop
       JSONObject selectedMeme = null;
+      System.out.println("Welcome to the UDP Meme-maker Client!");
       while (true) {
         // print available options
         System.out.println("\nChoose an option...");
@@ -98,12 +99,14 @@ public class Client {
           userInput = stdin.readLine();
           req.put("type", "find meme");
           req.put("name", userInput);
+
           // send request
-          out.writeObject(req.toString());
+          NetworkUtils.Send(server, address, port, req.toString().getBytes());
+          NetworkUtils.Tuple responseTuple = NetworkUtils.Receive(server);
           // receive a response
-          String serverResponse = (String)in.readObject();
-          JSONObject res = new JSONObject(serverResponse);
-          // check the response
+          JSONObject res = new JSONObject(new String(responseTuple.Payload));
+
+          // handle response
           if (res.getBoolean("success") == true) { // success
             System.out.println("\nFound meme \"" + res.getJSONObject("data").getString("name") + "\"");
             System.out.println("Would you like to select this meme? (y/n)");
@@ -121,12 +124,14 @@ public class Client {
         else if (userInput.equalsIgnoreCase("View Memes") || userInput.equals("2")) {
           JSONObject req = new JSONObject();
           req.put("type", "get memes");
+
           // send request
-          out.writeObject(req.toString());
+          NetworkUtils.Send(server, address, port, req.toString().getBytes());
           // receive a response
-          String serverResponse = (String)in.readObject();
-          JSONObject res = new JSONObject(serverResponse);
-          // check the response
+          NetworkUtils.Tuple responseTuple = NetworkUtils.Receive(server);
+          JSONObject res = new JSONObject(new String(responseTuple.Payload));
+
+          // handle response
           if (res.getBoolean("success") == true) { // success
             JSONArray memes = res.getJSONArray("data");
             System.out.println();
@@ -167,10 +172,12 @@ public class Client {
             }
 
             // send request
-            out.writeObject(req.toString());
+            NetworkUtils.Send(server, address, port, req.toString().getBytes());
             // receive a response
-            String serverResponse = (String)in.readObject();
-            JSONObject res = new JSONObject(serverResponse);
+            NetworkUtils.Tuple responseTuple = NetworkUtils.Receive(server);
+            JSONObject res = new JSONObject(new String(responseTuple.Payload));
+
+            // handle response
             if (res.getBoolean("success") == true) {
               BufferedImage image = decodeImage(res.getString("image"));
               displayImage(image);
@@ -195,7 +202,6 @@ public class Client {
           System.out.println("\nSorry, I didn't understand that input...");
         }
       }
-
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -224,9 +230,8 @@ public class Client {
     ImageIcon icon = new ImageIcon(image);
     if (icon != null) {
       JFrame frame = new JFrame();
+      frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
       JLabel label = new JLabel();
-      label.setFont(new Font("Helvetica Neue", Font.PLAIN, 14));
-      frame.setFont(new Font("Helvetica Neue", Font.PLAIN, 14));
       label.setIcon(icon);
       frame.add(label);
       frame.setSize(icon.getIconWidth(), icon.getIconHeight() + 40);
