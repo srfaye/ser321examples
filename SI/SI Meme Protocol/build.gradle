@@ -63,3 +63,28 @@ task udpServer(type: JavaExec) {
     args(project.getProperty('port'));
   }
 }
+
+task guiClient(type: JavaExec) {
+  description 'Client program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
+  main = 'gui.ClientGui'
+
+  // gradle runClient -Phost=somehost -Pport=someport
+  if (project.hasProperty("host") && project.hasProperty('port')) {
+    args(project.getProperty('host'), project.getProperty('port'));
+  }
+}
+
+task guiServer(type: JavaExec) {
+  description 'Server program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'gui.Server'
+
+  // gradle runClient -Pport=someport
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }
+}
