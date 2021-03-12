@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package messages;
+
+option java_package = "buffers";
+option java_outer_classname = "MessageProtos";
+
+message Request {
+  optional RequestType type = 1; 
+  optional string message = 2;
+
+  enum RequestType {
+    HELLO_MESSAGE = 0;
+    GOODBYE_MESSAGE = 1;
+  }
+}

@@ -1,4 +1,7 @@
-apply plugin: 'java'
+plugins {
+  id 'java'
+  id "com.google.protobuf" version "0.8.13" apply true
+}
 
 description = "SI Client/Server Program"
 
@@ -8,6 +11,21 @@ repositories {
 
 dependencies {
   compile 'org.json:json:20171018'
+  compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.13.0'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.13.0'
+    }
+    generateProtoTasks {
+    all().each { task ->
+      task.builtins {
+        // Generates Python code in the output folder:
+        python { }
+      }
+    }
+  }
 }
 
 tasks.withType(JavaCompile) {
@@ -82,6 +100,31 @@ task guiServer(type: JavaExec) {
 
   classpath = sourceSets.main.runtimeClasspath
   main = 'gui.Server'
+
+  // gradle runClient -Pport=someport
+  if (project.hasProperty('port')) {
+    args(project.getProperty('port'));
+  }
+}
+
+task pbufClient(type: JavaExec) {
+  description 'Client program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
+  main = 'pbuf.Client'
+
+  // gradle runClient -Phost=somehost -Pport=someport
+  if (project.hasProperty("host") && project.hasProperty('port')) {
+    args(project.getProperty('host'), project.getProperty('port'));
+  }
+}
+
+task pbufServer(type: JavaExec) {
+  description 'Server program for SI server example'
+
+  classpath = sourceSets.main.runtimeClasspath
+  main = 'pbuf.Server'
 
   // gradle runClient -Pport=someport
   if (project.hasProperty('port')) {
