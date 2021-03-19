@@ -8,10 +8,12 @@ option java_outer_classname = "OperationProtos";
 message Request {
   repeated int32 nums = 1;
   optional OperationType operationType = 2 [default = ADD];
+  optional string str = 3;
 
   enum OperationType {
     ADD = 0;
     SUB = 1;
+    RACE_CONDITION_TEST = 2;
   }
 }
 
@@ -19,4 +21,5 @@ message Response {
   optional bool success = 1;
   optional int32 result = 2;
   optional string error = 3;
+  optional string str = 4;
 }
