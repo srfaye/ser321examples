@@ -1,0 +1,39 @@
+apply plugin: 'java'
+
+description = "Echo Client Server Socket Example"
+
+def host = 'localhost'
+def port = '8050'
+
+task args() {
+if (project.hasProperty('port')) {
+port = project.getProperty('port');
+}
+if (project.hasProperty('host')) {
+host = project.getProperty('host');
+}
+}
+
+task runServer(type: JavaExec) {
+  description 'Creates Server socket waits for messages'
+
+  classpath = sourceSets.main.runtimeClasspath
+
+  main = 'Server'
+  // run with arguments e.g.: gradle Server -Pport=9099
+
+  args port
+}
+
+task runClient(type: JavaExec) {
+  description 'Creates client socket sends a message to the server'
+
+  classpath = sourceSets.main.runtimeClasspath
+  standardInput = System.in
+
+  main = 'Client'
+
+  // run with arguments e.g.: gradle Client -Phost=localhost -Pport=9099
+  args host
+  args port
+}

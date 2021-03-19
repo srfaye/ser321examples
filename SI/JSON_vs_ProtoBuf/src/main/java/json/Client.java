@@ -31,7 +31,8 @@ public class Client {
       BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
 
-      while(true) {
+      while(server.isBound() && !server.isClosed()) {
+        System.out.println("Input any text and hit enter to send a predefined JSON message to server...");
         JSONObject json = new JSONObject(); // create JSON object
         json.put("type", "hello"); // set key "type" with value "hello"
         json.put("message", "Hello server!");
@@ -40,7 +41,6 @@ public class Client {
 
         // block from infinite looping
         stdin.readLine();
-
       }
 
     } catch (Exception ex) {

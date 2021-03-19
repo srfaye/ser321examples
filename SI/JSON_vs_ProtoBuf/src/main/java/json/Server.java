@@ -5,7 +5,7 @@ import java.io.*;
 
 import org.json.*;
 
-// Server just receives a string, coverts it to a JSONObject, then prints from the JSONObject
+// Server just receives a JSON string, coverts it to a JSONObject, then prints from the JSONObject
 public class Server {
   public static void main (String args[]) {
     try {
@@ -22,7 +22,7 @@ public class Server {
         System.exit(0);
       }
 
-      System.out.println(port);
+      System.out.println("Listening on port " + port);
 
       ServerSocket serv = new ServerSocket(port);
       Socket clientSock;
@@ -32,16 +32,15 @@ public class Server {
           clientSock = serv.accept(); // accept a connection
           // we are using Object streams for easy sending of Strings
           ObjectOutputStream out = new ObjectOutputStream(clientSock.getOutputStream());
-          ObjectInputStream in = new ObjectInputStream(clientSock.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(clientSock.getInputStream());
           System.out.println("A client has connected!");
 
-          while (true) {
+          while (clientSock.isBound() && !clientSock.isClosed()) {
             // receive messages
             String reqString = (String)in.readObject(); // we expect a string so we cast it
             JSONObject req = new JSONObject(reqString); // create a JSONObject using the string constructor
             System.out.println("Message type: " + req.getString("type")); // print the fields
             System.out.println("Message: " + req.getString("message"));
-
           }
 
         } catch (Exception ex) {
