@@ -29,7 +29,7 @@ class SockBaseServer implements Runnable {
 
   // Concatenates a string 5 times (with a random short delay) to the static sharedString
   // Meant to simulate race conditions and shared memory access. Connect two clients to this server
-  // and send a string close to the same time
+  // and send a string close to the same time. Note this is NOT synchronized (potential r/w problems if ran without locks or monitors)
   public void addToSharedString(String str) throws Exception {
     Random rand = new Random();
     for (int i = 0; i < 5; i++) {
@@ -127,25 +127,34 @@ class SockBaseServer implements Runnable {
     }
 
     // Creating a ReadWriteLock to pass to threads
-    ReadWriteLock mutex = new ReentrantReadWriteLock();
+    ReadWriteLock mutex = new ReentrantReadWriteLock(); // you can instead use ReentrantLock if you don't care about separate read/write locks/unlocks
 
     // Creat a count for keeping track of client IDs
     int count = 0;
 
+    // If using a thread pool, we would set it up before accepting connections
+    int threadPoolSize = 2; // Max number of threads to run at a given time
+    Executor pool = Executors.newFixedThreadPool(threadPoolSize);
+
     // Begin listening for connections and spinning up threads
     while (serv.isBound() && !serv.isClosed()) {
-      System.out.println("Ready...");
+      System.out.println("Listening for connections...");
       try {
-        Socket clientSocket = serv.accept();
+        Socket clientSocket = serv.accept(); // Accept an incoming connection
+        System.out.println("Accepted a connection from client " + (count + 1));
 
-        /* Implementing runnable should look something like this */
-        SockBaseServer runnable = new SockBaseServer(clientSocket, ++count, mutex);
-        Thread thread = new Thread(runnable);
-        thread.start();
+        /* If implementing Runnable interface, starting a thread should look something like this
+        I'd recomment using this method because it plays nicely with thread pools */
+        // SockBaseServer runnable = new SockBaseServer(clientSocket, ++count, mutex);
+        // Thread thread = new Thread(runnable);
+        // thread.start();
 
-        /* Extending thread might look more like this */
+        /* If extending Thread class, starting a thread would look more like this */
         // SockBaseServer sockBaseServerThread = new SockBaseServer(clientSocket, ++count, mutex);
         // sockBaseServerThread.start();
+
+        /* If using a thread pool, starting a thread would look like this. Don't submit Thread objects to thread pool! */
+        pool.execute(new SockBaseServer(clientSocket, ++count, mutex)); // Passing a new runnable to pool.execute
 
       } catch (Exception ex) {
         ex.printStackTrace();
