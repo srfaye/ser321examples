@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package operation;
+
+option java_package = "buffers";
+option java_outer_classname = "TransactionProtos";
+
+message TCRequest {
+  optional double amount = 1;
+  optional string from = 2;
+  optional string to = 3;
+}
+
+message BankRequest {
+  optional double amount = 1;
+  optional bool withdraw = 2;
+}
+
+message BankResponse {
+  optional bool canPerform = 1;
+  optional bool hasPerformed = 2;
+}
+
+message TCConfirmTransaction {
+  optional bool perform = 1;
+}
+
+message TCResponse {
+  optional bool success = 1;
+}

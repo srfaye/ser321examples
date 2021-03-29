@@ -1,0 +1,137 @@
+plugins {
+  id 'java'
+  id "com.google.protobuf" version "0.8.13" apply true
+}
+
+description = "2-Phase Commit Example"
+
+repositories {
+    mavenCentral()
+}
+
+// json and protobuf dependencies
+dependencies {
+    compile group: 'org.json', name: 'json', version: '20200518'
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: '3.13.0'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.13.0'
+    }
+    generateProtoTasks {
+    all().each { task ->
+      task.builtins {
+        // Generates Python code in the output folder:
+        // python { }
+
+      }
+    }
+  }
+}
+
+def tcHost = 'localhost'
+def tcPort = 8007
+
+def bankAHost = 'localhost'
+def bankAPort = 8008
+
+def bankBHost = 'localhost'
+def bankBPort = 8009
+
+//gradle runClient -Pport=8007 -Phost='localhost'
+task runClient(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run Client"
+  main = 'Client'
+  standardInput = System.in
+
+  if (project.hasProperty("host")) {
+    tcHost = project.getProperty("host")
+  }
+  if (project.hasProperty("port")) {
+    tcPort = project.getProperty("port")
+  }
+
+  // default args
+  args tcHost
+  args tcPort
+}
+
+//gradle runTC -Pport=8007 -PaHost='localhost' -PaPort=8008 -PbHost='localhost' -PbPort=8009
+task runTC(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run Transaction Coordinator"
+  main = 'TransactionCoordinator'
+
+  if (project.hasProperty("port")) {
+    tcPort = project.getProperty("port")
+  }
+  if (project.hasProperty("aHost")) {
+    bankAHost = project.getProperty("aHost")
+  }
+  if (project.hasProperty("aPort")) {
+    bankAPort = project.getProperty("aPort")
+  }
+  if (project.hasProperty("bHost")) {
+    bankBHost = project.getProperty("bHost")
+  }
+  if (project.hasProperty("bPort")) {
+    bankBPort = project.getProperty("bPort")
+  }
+
+  // default args
+  args tcPort
+  args bankAHost
+  args bankAPort
+  args bankBHost
+  args bankBPort
+}
+
+//gradle runBankA -Pport=8008 -PbankName='Bank A'
+task runBankA(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run Bank A"
+  main = 'Bank'
+
+  def bankAName = 'Bank A'
+  def accountValue = 50.0
+  if (project.hasProperty("port")) {
+    bankAPort = project.getProperty("port")
+  }
+  if (project.hasProperty("bankName")) {
+    bankAName = project.getProperty("bankName")
+  }
+  if (project.hasProperty("accountValue")) {
+    accountValue = project.getProperty("accountValue")
+  }
+
+  // default args
+  args bankAPort
+  args bankAName
+  args accountValue
+}
+
+//gradle runBankB -Pport=8009 -PbankName='Bank B'
+task runBankB(type: JavaExec) {
+  classpath = sourceSets.main.runtimeClasspath
+  description = "Run Bank B"
+  main = 'Bank'
+
+  def bankBName = 'Bank B'
+  def accountValue = 20.00
+  if (project.hasProperty("port")) {
+    bankBPort = project.getProperty("port")
+  }
+  if (project.hasProperty("bankName")) {
+    bankBName = project.getProperty("bankName")
+  }
+  if (project.hasProperty("accountValue")) {
+    accountValue = project.getProperty("accountValue")
+  }
+
+  // default args
+  args bankBPort
+  args bankBName
+  args accountValue
+}
