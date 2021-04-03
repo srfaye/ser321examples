@@ -5,7 +5,6 @@ import buffers.TransactionProtos.TCResponse;
 
 public class Client {
 
-
   public static void main(String[] args) {
     if (args.length != 2) {
       System.out.println("Expected arguments: <host(String)> <port(int)>");
