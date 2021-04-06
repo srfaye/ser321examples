@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package operation;
+
+option java_multiple_files = true;
+option java_package = "rpc";
+option java_outer_classname = "TransactionProtos";
+
+service BankService {
+  rpc checkTransaction (BankRequest) returns (BankResponse) {}
+  rpc performTransaction (TCConfirmTransaction) returns (BankResponse) {}
+}
+
+message TCRequest {
+  double amount = 1;
+  string from = 2;
+  string to = 3;
+}
+
+message BankRequest {
+  double amount = 1;
+  bool withdraw = 2;
+}
+
+message BankResponse {
+  bool canPerform = 1;
+  bool hasPerformed = 2;
+}
+
+message TCConfirmTransaction {
+  bool perform = 1;
+  double amount = 2;
+  bool withdraw = 3;
+}
+
+message TCResponse {
+  bool success = 1;
+}
